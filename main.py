@@ -7,29 +7,34 @@ import matplotlib.animation as animation
 import threading
 import time 
 from queue import Queue
+import json 
 #import asyncio
 
 class CalculateCam(threading.Thread):
-    def __init__(self,  cam_nomber : int = 0, ) -> None:
+    def __init__(self, *args, **kwargs):
         threading.Thread.__init__(self)
         print(time.strftime('%X'))
+        self.id_camera, self.mask_param, self.cropped_image_big_param, self.center_arrow, self.init_value = [args[0][key] for key in args[0]]
+      
+
         self.past_estimate = [0, 0]  #[cost, chetvert]
         self.sepresent_estimate = [0, 0]
-        self.id_camera = cam_nomber
+        self.init_value = 0
+        
         self.first_step = True
         self.final_score = 0
         self.sum_score = 0
-        self.cap = cv.VideoCapture(cam_nomber)
+        self.cap = cv.VideoCapture(self.id_camera)
         if not self.cap.isOpened():
             print("Cannot open camera capture")
             exit()
         else: 
-            print("cam id {} openned".format(cam_nomber))
-    def mask_black(self, img):
+            print("cam id {} openned".format(self.id_camera))
+    def mask_black(self, img, mask):
     	#hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
     	# define range of yellow color in HSV
-        lower_yellow = np.array([4, 4, 4])  # 0,100,100
-        upper_yellow = np.array([60, 60, 70])  # 30,255,255
+        lower_yellow = np.array(mask[0])  # 0,100,100
+        upper_yellow = np.array(mask[1])  # 30,255,255
     	# Threshold the HSV image to get only yellow colors
         mask = cv.inRange(img, lower_yellow, upper_yellow)
         return mask
@@ -44,14 +49,15 @@ class CalculateCam(threading.Thread):
             if not ret:
                 print("Can't receive frame, exiting")
             
-            cropped_image_big = frame[140:340, 185:390]
+            cropped_image_big = frame[self.cropped_image_big_param[0]:self.cropped_image_big_param[1],
+                                      self.cropped_image_big_param[2]:self.cropped_image_big_param[3]]#[140:340, 185:390]
             cropped_image_small = frame[169:230, 310:390] # y x
             #cv.imshow('cropped_image_small', cropped_image_small)
             cv.imshow('cropped_image_big ' + str(self.id_camera), cropped_image_big)
             
             #cropped_image_big_show = np.copy(frame[190:295, 250:380])
-            cropped_image_small_bin = self.mask_black(cropped_image_small)
-            cropped_image_big_bin = self.mask_black(cropped_image_big)
+            cropped_image_small_bin = self.mask_black(cropped_image_small, mask=self.mask_param)
+            cropped_image_big_bin = self.mask_black(cropped_image_big, mask=self.mask_param)
             #cv.imshow('cropped_image_small_bin', cropped_image_small_bin)
             cv.imshow('cropped_image_big_bin '+ str(self.id_camera), cropped_image_big_bin)
             
@@ -69,7 +75,7 @@ class CalculateCam(threading.Thread):
                     alpha_degree = math.degrees(alpha)
                     #print("угол наклона прямой маленькой стрелки {0}".format(alpha_degree))
 
-            center_arrow = [115, 86] # [x , y]
+            center_arrow = self.center_arrow#[115, 86] # [x , y]
             if lines_big is None:
                 pass
             else:
@@ -132,6 +138,7 @@ class CalculateCam(threading.Thread):
                         print("Микрометры устройтсво {0} ИТОГ : {1}".format(self.id_camera, absolut + self.final_score)) 
                         self.sum_score = absolut + self.final_score
                         #self.queue1.put({self.id_camera : absolut + self.final_score})
+            cv.imshow("line_big",cropped_image_big)
             if cv.waitKey(1) == ord('q'):
                 
                 self.cap.release()
@@ -139,8 +146,11 @@ class CalculateCam(threading.Thread):
      
 class GetValue():
     def __init__(self):
-       
-        self.vid1 = CalculateCam(2)
+        f = open('data_prarams.json', 'r')
+        data_param = json.loads(f.read())
+        cam_0 = data_param['Camera0']
+        f.close()
+        self.vid1 = CalculateCam(cam_0)
         self.vid1.start()
         # self.vid = CalculateCam(2)
         # self.vid.start()
