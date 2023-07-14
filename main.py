@@ -10,10 +10,9 @@ from queue import Queue
 #import asyncio
 
 class CalculateCam(threading.Thread):
-    def __init__(self, queue1,  cam_nomber : int = 0, ) -> None:
+    def __init__(self,  cam_nomber : int = 0, ) -> None:
         threading.Thread.__init__(self)
         print(time.strftime('%X'))
-        self.queue1 = queue1
         self.past_estimate = [0, 0]  #[cost, chetvert]
         self.sepresent_estimate = [0, 0]
         self.id_camera = cam_nomber
@@ -24,7 +23,8 @@ class CalculateCam(threading.Thread):
         if not self.cap.isOpened():
             print("Cannot open camera capture")
             exit()
-
+        else: 
+            print("cam id {} openned".format(cam_nomber))
     def mask_black(self, img):
     	#hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
     	# define range of yellow color in HSV
@@ -131,20 +131,21 @@ class CalculateCam(threading.Thread):
                         self.past_estimate = [absolut, chetvert]
                         print("Микрометры устройтсво {0} ИТОГ : {1}".format(self.id_camera, absolut + self.final_score)) 
                         self.sum_score = absolut + self.final_score
-                        self.queue1.put({self.id_camera : absolut + self.final_score})
+                        #self.queue1.put({self.id_camera : absolut + self.final_score})
             if cv.waitKey(1) == ord('q'):
                 
                 self.cap.release()
                 cv.destroyAllWindows()
      
-class GetValue(threading.Thread):
+class GetValue():
     def __init__(self):
-        threading.Thread.__init__(self)
-        queue1 = Queue()
-        self.vid = CalculateCam(queue1, 2)
-        self.vid.start()
-        self.vid1 = CalculateCam(queue1, 0)
+       
+        self.vid1 = CalculateCam(2)
         self.vid1.start()
+        # self.vid = CalculateCam(2)
+        # self.vid.start()
+        
+        
     def value(self):
         return(self.vid.sum_score, self.vid1.sum_score)
         
@@ -152,23 +153,14 @@ def main():
     get = GetValue()
     print('start')
     
-    print(get.value())
-    print('start1')
-    time.sleep(5)
-    print('start2')
-    print(get.value())
-    time.sleep(5)
-    print(get.value())
+    # print(get.value())
+    # print('start1')
+    # time.sleep(5)
+    # print('start2')
+    # print(get.value())
+    # time.sleep(5)
+    # print(get.value())
 
-    #get.start()
-    
-    # vid = CalculateCam(2)
-    # vid.start()
-    # #print(vid.sum_score)
-    # vid1 = CalculateCam(0)
-    # vid1.start()
-    # # while True:
-    #     print('vid1 ',vid1.final_score,'  vid  ', vid.final_score)
 
 
 if __name__ == '__main__':
