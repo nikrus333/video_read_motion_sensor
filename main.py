@@ -24,12 +24,15 @@ class CalculateCam(threading.Thread):
         self.first_step = True
         self.final_score = 0
         self.sum_score = 0
-        self.cap = cv.VideoCapture(self.id_camera)
+        self.cap = cv.VideoCapture(self.id_camera) 
         if not self.cap.isOpened():
             print("Cannot open camera capture")
             exit()
         else: 
             print("cam id {} openned".format(self.id_camera))
+        self.cap.set(3,640)
+        self.cap.set(4,480)
+
     def mask_black(self, img, mask):
     	#hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
     	# define range of yellow color in HSV
@@ -41,10 +44,12 @@ class CalculateCam(threading.Thread):
     
     
     def run(self):
+        flag_show = True
         while True:
             ret, frame = self.cap.read()
             frame = cv.resize(frame, (640, 480))
-            cv.imshow('frame ' + str(self.id_camera), frame)
+            if flag_show:
+                cv.imshow('frame ' + str(self.id_camera), frame)
 
             if not ret:
                 print("Can't receive frame, exiting")
@@ -53,16 +58,18 @@ class CalculateCam(threading.Thread):
                                       self.cropped_image_big_param[2]:self.cropped_image_big_param[3]]#[140:340, 185:390]
             cropped_image_small = frame[169:230, 310:390] # y x
             #cv.imshow('cropped_image_small', cropped_image_small)
-            cv.imshow('cropped_image_big ' + str(self.id_camera), cropped_image_big)
+            if flag_show:
+                cv.imshow('cropped_image_big ' + str(self.id_camera), cropped_image_big)
             
             #cropped_image_big_show = np.copy(frame[190:295, 250:380])
             cropped_image_small_bin = self.mask_black(cropped_image_small, mask=self.mask_param)
             cropped_image_big_bin = self.mask_black(cropped_image_big, mask=self.mask_param)
             #cv.imshow('cropped_image_small_bin', cropped_image_small_bin)
-            cv.imshow('cropped_image_big_bin '+ str(self.id_camera), cropped_image_big_bin)
+            if flag_show:
+                cv.imshow('cropped_image_big_bin '+ str(self.id_camera), cropped_image_big_bin)
             
             lines_small = cv.HoughLinesP(cropped_image_small_bin,1,np.pi/180,40,minLineLength=20,maxLineGap=30)
-            lines_big = cv.HoughLinesP(cropped_image_big_bin,1,np.pi/180,40,minLineLength=20,maxLineGap=30)
+            lines_big = cv.HoughLinesP(cropped_image_big_bin,1,np.pi/180,40,minLineLength=40,maxLineGap=40)
             
             if lines_small is None:
                 pass
@@ -70,9 +77,9 @@ class CalculateCam(threading.Thread):
                 i = 0
                 for x1,y1,x2,y2 in lines_small[0]:
                     i+=1
-                    cv.line(cropped_image_small,(x1,y1),(x2,y2),(255,0,0),5)
-                    alpha = math.atan ( (y2-y1) / (x2-x1) )
-                    alpha_degree = math.degrees(alpha)
+                    #cv.line(cropped_image_small,(x1,y1),(x2,y2),(255,0,0),5)
+                    #alpha = math.atan ( (y2-y1) / (x2-x1) )
+                    #alpha_degree = math.degrees(alpha)
                     #print("угол наклона прямой маленькой стрелки {0}".format(alpha_degree))
 
             center_arrow = self.center_arrow#[115, 86] # [x , y]
@@ -138,9 +145,9 @@ class CalculateCam(threading.Thread):
                         print("Микрометры устройтсво {0} ИТОГ : {1}".format(self.id_camera, absolut + self.final_score)) 
                         self.sum_score = absolut + self.final_score
                         #self.queue1.put({self.id_camera : absolut + self.final_score})
-            cv.imshow("line_big",cropped_image_big)
+            if flag_show:
+                cv.imshow("line_big " + str(self.id_camera),cropped_image_big)
             if cv.waitKey(1) == ord('q'):
-                
                 self.cap.release()
                 cv.destroyAllWindows()
      
@@ -149,26 +156,31 @@ class GetValue():
         f = open('data_prarams.json', 'r')
         data_param = json.loads(f.read())
         cam_0 = data_param['Camera0']
+        cam_1 = data_param['Camera1']
+        cam_2 = data_param['Camera2']
         f.close()
-        self.vid1 = CalculateCam(cam_0)
-        self.vid1.start()
-        # self.vid = CalculateCam(2)
+        # self.vid = CalculateCam(cam_0)
         # self.vid.start()
+        self.vid1 = CalculateCam(cam_1)
+        self.vid1.start()
+        self.vid2 = CalculateCam(cam_2)
+        self.vid2.start()
         
         
     def value(self):
-        return(self.vid.sum_score, self.vid1.sum_score)
+        return(self.vid.sum_score, self.vid1.sum_score, self.vid2.sum_score)
         
 def main():
     get = GetValue()
     print('start')
-    
-    # print(get.value())
-    # print('start1')
-    # time.sleep(5)
+    # while True:
+    #     print(get.value())
+    # # print('start1')
+    #     time.sleep(5)
     # print('start2')
     # print(get.value())
     # time.sleep(5)
+    # print('start3')
     # print(get.value())
 
 
