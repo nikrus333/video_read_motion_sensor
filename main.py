@@ -42,9 +42,12 @@ class CalculateCam(threading.Thread):
         mask = cv.inRange(img, lower_yellow, upper_yellow)
         return mask
     
+    def compute(self):
+        pass
+    
     
     def run(self):
-        flag_show = True
+        flag_show = False
         while True:
             ret, frame = self.cap.read()
             frame = cv.resize(frame, (640, 480))
@@ -159,8 +162,8 @@ class GetValue():
         cam_1 = data_param['Camera1']
         cam_2 = data_param['Camera2']
         f.close()
-        # self.vid = CalculateCam(cam_0)
-        # self.vid.start()
+        self.vid = CalculateCam(cam_0)
+        self.vid.start()
         self.vid1 = CalculateCam(cam_1)
         self.vid1.start()
         self.vid2 = CalculateCam(cam_2)
@@ -173,8 +176,8 @@ class GetValue():
 def main():
     get = GetValue()
     print('start')
-    # while True:
-    #     print(get.value())
+    while True:
+        print(get.value())
     # # print('start1')
     #     time.sleep(5)
     # print('start2')

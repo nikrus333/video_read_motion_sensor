@@ -3,14 +3,14 @@
         "cam_nomber" : 2,
         "mask_param" : [[0, 0, 0], [20, 20, 20]],
         "cropped_image_big_param" : [110, 350, 185, 420],
-        "center_arrow" : [132, 135],
+        "center_arrow" : [114, 118],
         "init_value" : 0
     },
     "Camera1": {
         "cam_nomber" : 0,
         "mask_param" : [[0, 0, 0], [30, 30, 40]],
         "cropped_image_big_param" : [110, 340, 185, 430],
-        "center_arrow" : [132, 135],
+        "center_arrow" : [12, 135],
         "init_value" : 0
     },
     "Camera2": {
