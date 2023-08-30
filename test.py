@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import math
 import time
+import pandas as pd
 
 class WebcamVideoStream:
     def __init__(self, *args ) :
@@ -150,7 +151,7 @@ class WebcamVideoStream:
         if cv2.waitKey(1) == ord('q'):
             self.cap.release()
             cv2.destroyAllWindows()
-        return cropped_image_big, self.sum_score 
+        return cropped_image_big, cropped_image_big_bin, self.sum_score, 
 
     def __exit__(self, exc_type, exc_value, traceback) :
         self.stream.release()
@@ -162,6 +163,8 @@ class GetValue():
         cam_0 = data_param['Camera0']
         cam_1 = data_param['Camera1']
         cam_2 = data_param['Camera2']
+
+    
         f.close()
         self.vs = WebcamVideoStream(cam_0).start()
         self.vs1 = WebcamVideoStream(cam_1).start()
@@ -170,6 +173,9 @@ class GetValue():
         self.value0 = 0
         self.value1 = 0
         self.value2 = 0
+    
+    def nothing(sekf, x):
+        pass
         
 
     def work(self):
@@ -177,15 +183,18 @@ class GetValue():
             frame = self.vs.read()
             frame1 = self.vs1.read()
             frame2 = self.vs2.read()
-            cropped_image_big, self.value0 = self.vs.work(frame)
-            cropped_image_big1, self.value1 = self.vs1.work(frame1)
-            cropped_image_big2, self.value2 = self.vs2.work(frame2)
+            cropped_image_big, bin_image, self.value0 = self.vs.work(frame)
+            cropped_image_big1, bin_image1, self.value1 = self.vs1.work(frame1)
+            cropped_image_big2, bin_image2, self.value2 = self.vs2.work(frame2)
             cv2.imshow('webcam', frame)
             cv2.imshow('webcam1', frame1)
             cv2.imshow('webcam2', frame2)
             cv2.imshow('cropped_image_big', cropped_image_big)
             cv2.imshow('cropped_image_big1', cropped_image_big1)
             cv2.imshow('cropped_image_big2', cropped_image_big2)
+            cv2.imshow('image_bin', bin_image)
+            cv2.imshow('image_bin1', bin_image1)
+            cv2.imshow('image_bin2', bin_image2)
             if cv2.waitKey(1) == 27 :
                 break
         self.vs.stop()
@@ -194,12 +203,28 @@ class GetValue():
         cv2.destroyAllWindows()
 
     def value(self):
-        return(self.value0, self.value1, self.value2)
+        return[self.value0, self.value1, self.value2]
+    
+
 if __name__ == "__main__" :
     getvalue = GetValue()
     x = Thread(target= getvalue.work)
     x.start()
-    while True:
-        print(getvalue.value())
-        time.sleep(5)
+    x_axes_data = []
+    y_axes_data = []
+    z_axes_data = []
+    try:
+        while True:
+            value = getvalue.value()
+            print(value)
+            x_axes_data.append(value[0])
+            y_axes_data.append(value[1])
+            z_axes_data.append(value[2])
+            time.sleep(0.1)
+            
+    except KeyboardInterrupt:
+            data = dict(x_axes_data=x_axes_data, y_axes_data=y_axes_data, z_axes_data=z_axes_data)
+            df = pd.DataFrame(data)
+            df.to_csv('value_axises__2.csv')
+            print('end work')
     

@@ -1,23 +1,23 @@
 {
     "Camera0": {
         "cam_nomber" : 2,
-        "mask_param" : [[0, 0, 0], [20, 20, 20]],
-        "cropped_image_big_param" : [110, 350, 185, 420],
-        "center_arrow" : [114, 118],
+        "mask_param" : [[0, 0, 0], [90, 90, 140]],
+        "cropped_image_big_param" : [120, 345, 197, 412],
+        "center_arrow" : [110, 114],
         "init_value" : 0
     },
     "Camera1": {
-        "cam_nomber" : 0,
-        "mask_param" : [[0, 0, 0], [30, 30, 40]],
-        "cropped_image_big_param" : [110, 340, 185, 430],
-        "center_arrow" : [12, 135],
+        "cam_nomber" : 4,
+        "mask_param" : [[0, 0, 0], [120, 120, 155]],
+        "cropped_image_big_param" : [130, 330, 240, 440],
+        "center_arrow" : [102, 106],
         "init_value" : 0
     },
     "Camera2": {
         "cam_nomber" : 6,
-        "mask_param" : [[0, 0, 0], [30, 30, 30]],
-        "cropped_image_big_param" : [110, 340, 215, 450],
-        "center_arrow" : [132, 135],
+        "mask_param" : [[0, 0, 0], [100, 100, 120]],
+        "cropped_image_big_param" : [125, 334, 196, 404],
+        "center_arrow" : [108, 125],
         "init_value" : 0
     }
                 }
